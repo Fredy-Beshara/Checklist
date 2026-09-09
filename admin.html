@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel do Palestrante — Checklist do Contador</title>
+<style>
+  :root{
+    --navy:#13233f; --navy2:#1c3157; --teal:#3fb5b5;
+    --bg:#eef1f6; --card:#fff; --text:#1c2333; --muted:#6b7486;
+    --ok:#2f9e5c; --warn:#e0a326; --bad:#c65b4e;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);}
+  header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:20px 16px;text-align:center;}
+  header h1{margin:0;font-size:20px;}
+  .wrap{max-width:900px;margin:0 auto;padding:16px;}
+  .card{background:var(--card);border-radius:12px;padding:18px;margin-bottom:16px;box-shadow:0 1px 4px rgba(19,35,63,.08);}
+  input[type=password], input[type=text]{width:100%;padding:10px;border:1px solid #d3d9e6;border-radius:8px;font-size:14px;}
+  .btn{background:var(--navy);color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th,td{text-align:left;padding:8px;border-bottom:1px solid #eef0f5;}
+  th{color:var(--navy2);}
+  tr.clickable{cursor:pointer;}
+  tr.clickable:hover{background:#f6f8fb;}
+  .hidden{display:none;}
+  .top-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+  .top-actions .btn.secondary{background:#fff;color:var(--navy);border:1px solid var(--navy);}
+  .detalhe-section{margin-bottom:14px;}
+  .detalhe-section h3{font-size:14px;color:var(--navy);border-left:3px solid var(--teal);padding-left:8px;margin-bottom:6px;}
+  .detalhe-item{font-size:13px;padding:4px 0;border-bottom:1px dashed #eef0f5;}
+  .tag-status{
+    display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;color:#fff;margin-left:6px;
+  }
+  .tag-status.nao{background:var(--bad);}
+  .tag-status.andamento{background:var(--warn);}
+  .tag-status.concluido{background:var(--ok);}
+  .voltar{background:none;border:none;color:var(--navy);cursor:pointer;font-size:13px;padding:0 0 10px;text-decoration:underline;}
+  .error{color:var(--bad);font-size:13px;margin-top:8px;}
+</style>
+</head>
+<body>
+
+<header><h1>Painel do Palestrante</h1></header>
+
+<div class="wrap">
+
+  <div id="tela-login" class="card">
+    <label>Senha de acesso</label>
+    <input type="password" id="senha" placeholder="Digite a senha">
+    <div style="margin-top:12px;"><button class="btn" onclick="verificarSenha()">Entrar</button></div>
+    <div id="login-erro" class="error hidden">Senha incorreta.</div>
+  </div>
+
+  <div id="tela-lista" class="hidden">
+    <div class="card" id="config-evento-card">
+      <h2 style="margin:0 0 10px;color:var(--navy);font-size:16px;">Dados da palestra</h2>
+      <label style="font-size:12px;font-weight:600;color:var(--navy2);display:block;margin-bottom:4px;">Local</label>
+      <input type="text" id="cfg_local" placeholder="Ex: Auditório CRC-GO">
+      <label style="font-size:12px;font-weight:600;color:var(--navy2);display:block;margin:10px 0 4px;">Data</label>
+      <input type="text" id="cfg_data" placeholder="Ex: 15/10/2026">
+      <div style="margin-top:10px;">
+        <button class="btn secondary" onclick="salvarConfigEvento()">Salvar dados da palestra</button>
+      </div>
+      <div id="config-status" style="font-size:12px;color:var(--muted);margin-top:6px;"></div>
+    </div>
+
+    <div class="top-actions">
+      <h2 style="margin:0;color:var(--navy);font-size:17px;">Participantes</h2>
+      <div style="display:flex;gap:8px;">
+        <button class="btn secondary" onclick="exportarExcel()">Exportar Excel</button>
+        <button class="btn secondary" onclick="exportarCSV()">Exportar CSV</button>
+      </div>
+    </div>
+    <div class="card" style="border:1px solid var(--bad);">
+      <button class="btn" style="background:var(--bad);" onclick="zerarParticipantes()">Zerar participantes (usar em nova palestra)</button>
+      <p style="font-size:12px;color:var(--muted);margin:8px 0 0;">Apaga a lista de participantes do banco. Exporte antes — essa ação não pode ser desfeita.</p>
+    </div>
+    <div class="card">
+      <table id="tabela-participantes">
+        <thead>
+          <tr><th>Nome</th><th>WhatsApp</th><th>Profissão</th><th>E-mail</th><th>Instagram</th><th>Cadastro</th></tr>
+        </thead>
+        <tbody id="tbody-participantes"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="tela-detalhe" class="hidden">
+    <button class="voltar" onclick="voltarLista()">&larr; Voltar para a lista</button>
+    <div class="card" id="detalhe-container"></div>
+  </div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+let participantesCache = {};
+
+function verificarSenha(){
+  const senha = document.getElementById('senha').value;
+  if(senha === ADMIN_PASSWORD){
+    document.getElementById('tela-login').classList.add('hidden');
+    document.getElementById('tela-lista').classList.remove('hidden');
+    carregarParticipantes();
+  } else {
+    document.getElementById('login-erro').classList.remove('hidden');
+  }
+}
+
+function carregarParticipantes(){
+  db.ref('config/evento').once('value').then(snap=>{
+    const cfg = snap.val() || {};
+    document.getElementById('cfg_local').value = cfg.local || '';
+    document.getElementById('cfg_data').value = cfg.data || '';
+  });
+
+  db.ref('participantes').once('value').then(snap=>{
+    participantesCache = snap.val() || {};
+    const tbody = document.getElementById('tbody-participantes');
+    tbody.innerHTML = '';
+    Object.keys(participantesCache).forEach(id=>{
+      const p = participantesCache[id];
+      const tr = document.createElement('tr');
+      tr.className = 'clickable';
+      tr.onclick = ()=>mostrarDetalhe(id);
+      const data = p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR') : '';
+      tr.innerHTML = '<td>'+(p.nome||'')+'</td><td>'+(p.whatsapp||'')+'</td><td>'+(p.profissao||'')+'</td><td>'+(p.email||'')+'</td><td>'+(p.instagram||'')+'</td><td>'+data+'</td>';
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function salvarConfigEvento(){
+  const local = document.getElementById('cfg_local').value.trim();
+  const data = document.getElementById('cfg_data').value.trim();
+  db.ref('config/evento').set({local, data}).then(()=>{
+    document.getElementById('config-status').textContent = 'Salvo ✓';
+    setTimeout(()=>{ document.getElementById('config-status').textContent=''; }, 2000);
+  });
+}
+
+function nomeArquivoBase(){
+  const local = (document.getElementById('cfg_local').value || 'palestra').trim().replace(/\s+/g,'_');
+  const data = (document.getElementById('cfg_data').value || '').trim().replace(/[\/\s]+/g,'-');
+  return 'checklist_'+local+(data ? '_'+data : '');
+}
+
+function zerarParticipantes(){
+  if(!confirm('Tem certeza? Isso vai apagar TODOS os participantes cadastrados. Exporte antes se ainda não exportou.')) return;
+  if(!confirm('Confirmando de novo: essa ação não pode ser desfeita. Apagar mesmo assim?')) return;
+  db.ref('participantes').remove().then(()=>{
+    alert('Lista de participantes zerada. Pronto para a próxima palestra.');
+    carregarParticipantes();
+  });
+}
+
+function labelStatus(v){
+  if(v==='nao') return 'Não realizado';
+  if(v==='andamento') return 'Em andamento';
+  if(v==='concluido') return 'Concluído';
+  if(v==='sim') return 'SIM';
+  return v || '—';
+}
+
+function mostrarDetalhe(id){
+  const p = participantesCache[id];
+  document.getElementById('tela-lista').classList.add('hidden');
+  document.getElementById('tela-detalhe').classList.remove('hidden');
+  const container = document.getElementById('detalhe-container');
+
+  let html = '<h2 style="color:var(--navy);margin-top:0;">'+(p.nome||'')+'</h2>';
+  html += '<p style="color:var(--muted);font-size:13px;">WhatsApp: '+(p.whatsapp||'—')+' · Profissão: '+(p.profissao||'—')+' · E-mail: '+(p.email||'—')+' · Instagram: '+(p.instagram||'—')+'</p>';
+  html += '<button class="btn secondary" onclick="baixarPDFParticipante(\''+id+'\')" style="margin-bottom:14px;">Baixar respostas em PDF</button>';
+
+  const respostas = p.respostas || {};
+  Object.keys(respostas).forEach(sectionId=>{
+    html += '<div class="detalhe-section"><h3>'+sectionId+'</h3>';
+    const items = respostas[sectionId];
+    Object.keys(items).forEach(itemId=>{
+      const it = items[itemId];
+      let linha = itemId;
+      if(it.valor !== undefined) linha += ': ' + (it.valor || '—');
+      if(it.status !== undefined){
+        linha += ' <span class="tag-status '+it.status+'">'+labelStatus(it.status)+'</span>';
+      }
+      if(it.responsavel) linha += ' · Responsável: ' + it.responsavel;
+      if(it.prazo) linha += ' · Prazo: ' + it.prazo;
+      html += '<div class="detalhe-item">'+linha+'</div>';
+    });
+    html += '</div>';
+  });
+
+  if(Object.keys(respostas).length === 0){
+    html += '<p style="color:var(--muted);">Este participante ainda não respondeu ao checklist.</p>';
+  }
+
+  container.innerHTML = html;
+}
+
+function voltarLista(){
+  document.getElementById('tela-detalhe').classList.add('hidden');
+  document.getElementById('tela-lista').classList.remove('hidden');
+}
+
+function baixarPDFParticipante(id){
+  const p = participantesCache[id];
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const margin = 14;
+  let y = 18;
+  const pageHeight = doc.internal.pageSize.height;
+
+  function linha(texto, tamanho=11, negrito=false){
+    doc.setFontSize(tamanho);
+    doc.setFont(undefined, negrito ? 'bold' : 'normal');
+    const partes = doc.splitTextToSize(String(texto), 180);
+    partes.forEach(pt=>{
+      if(y > pageHeight - 15){ doc.addPage(); y = 18; }
+      doc.text(pt, margin, y);
+      y += tamanho * 0.5 + 2;
+    });
+  }
+
+  linha('Checklist do Contador — Reforma Tributária 2026-2033', 14, true);
+  linha(p.nome||'', 12, true);
+  linha('Profissão: '+(p.profissao||'—')+' | WhatsApp: '+(p.whatsapp||'—'), 9);
+  linha('E-mail: '+(p.email||'—')+' | Instagram: '+(p.instagram||'—'), 9);
+  y += 4;
+
+  const respostas = p.respostas || {};
+  Object.keys(respostas).forEach(sectionId=>{
+    y += 2;
+    linha(sectionId, 12, true);
+    const items = respostas[sectionId];
+    Object.keys(items).forEach(itemId=>{
+      const it = items[itemId];
+      let txt = itemId;
+      if(it.valor !== undefined) txt += ': ' + (labelStatus(it.valor) || it.valor || '—');
+      if(it.status !== undefined) txt += ': ' + labelStatus(it.status);
+      if(it.responsavel) txt += ' | Responsável: ' + it.responsavel;
+      if(it.prazo) txt += ' | Prazo: ' + it.prazo;
+      linha(txt, 10);
+    });
+  });
+
+  if(Object.keys(respostas).length === 0){
+    linha('Este participante ainda não respondeu ao checklist.', 10);
+  }
+
+  doc.save('checklist_'+(p.nome||'participante').replace(/\s+/g,'_')+'.pdf');
+}
+
+function exportarExcel(){
+  const resumo = [['Nome','WhatsApp','Profissão','E-mail','Instagram','Cadastro em']];
+
+  Object.keys(participantesCache).forEach(id=>{
+    const p = participantesCache[id];
+    const data = p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR') : '';
+    resumo.push([p.nome||'', p.whatsapp||'', p.profissao||'', p.email||'', p.instagram||'', data]);
+  });
+
+  const wb = XLSX.utils.book_new();
+  const wsResumo = XLSX.utils.aoa_to_sheet(resumo);
+  XLSX.utils.book_append_sheet(wb, wsResumo, 'Participantes');
+  XLSX.writeFile(wb, nomeArquivoBase()+'.xlsx');
+}
+
+function exportarCSV(){
+  let linhas = [['Nome','WhatsApp','Profissão','E-mail','Instagram','Cadastro em']];
+  Object.keys(participantesCache).forEach(id=>{
+    const p = participantesCache[id];
+    const data = p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR') : '';
+    linhas.push([p.nome||'', p.whatsapp||'', p.profissao||'', p.email||'', p.instagram||'', data]);
+  });
+  const csv = linhas.map(l=>l.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob = new Blob(["\uFEFF"+csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nomeArquivoBase()+'.csv';
+  a.click();
+}
+</script>
+</body>
+</html>

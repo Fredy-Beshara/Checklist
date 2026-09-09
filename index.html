@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checklist do Contador — Reforma Tributária 2026-2033</title>
+<style>
+  :root{
+    --navy:#13233f;
+    --navy2:#1c3157;
+    --teal:#3fb5b5;
+    --bg:#eef1f6;
+    --card:#ffffff;
+    --text:#1c2333;
+    --muted:#6b7486;
+    --ok:#2f9e5c;
+    --warn:#e0a326;
+    --bad:#c65b4e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  header{
+    background:linear-gradient(135deg,var(--navy),var(--navy2));
+    color:#fff;
+    padding:24px 16px 20px;
+    text-align:center;
+    position:relative;
+  }
+  header .tag{
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--teal);
+    font-weight:600;
+  }
+  header h1{
+    margin:6px 0 4px;
+    font-size:22px;
+  }
+  header p{
+    margin:0;
+    font-size:13px;
+    color:#c9d3e6;
+  }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    padding:16px;
+  }
+  .card{
+    background:var(--card);
+    border-radius:12px;
+    padding:18px;
+    margin-bottom:16px;
+    box-shadow:0 1px 4px rgba(19,35,63,0.08);
+  }
+  .card h2{
+    font-size:16px;
+    color:var(--navy);
+    margin:0 0 12px;
+    border-left:4px solid var(--teal);
+    padding-left:10px;
+  }
+  label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    margin:10px 0 4px;
+    color:var(--navy2);
+  }
+  input[type=text], input[type=email], input[type=tel], input[type=date], textarea{
+    width:100%;
+    padding:10px;
+    border:1px solid #d3d9e6;
+    border-radius:8px;
+    font-size:14px;
+    font-family:inherit;
+    background:#fbfcfe;
+  }
+  textarea{min-height:60px;resize:vertical;}
+  .btn{
+    display:inline-block;
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    padding:12px 20px;
+    border-radius:8px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    width:100%;
+  }
+  .btn:active{opacity:.85;}
+  .btn.secondary{
+    background:#fff;
+    color:var(--navy);
+    border:1px solid var(--navy);
+  }
+  .status-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:10px 0;
+    border-bottom:1px solid #eef0f5;
+  }
+  .status-row:last-child{border-bottom:none;}
+  .status-row .q{
+    font-size:14px;
+    flex:1;
+  }
+  .status-options{
+    display:flex;
+    gap:6px;
+    flex-shrink:0;
+  }
+  .status-options button{
+    border:1px solid #d3d9e6;
+    background:#fff;
+    font-size:11px;
+    padding:6px 8px;
+    border-radius:6px;
+    cursor:pointer;
+    white-space:nowrap;
+    color:var(--muted);
+  }
+  .status-options button.active[data-v="nao"]{background:var(--bad);color:#fff;border-color:var(--bad);}
+  .status-options button.active[data-v="andamento"]{background:var(--warn);color:#fff;border-color:var(--warn);}
+  .status-options button.active[data-v="concluido"]{background:var(--ok);color:#fff;border-color:var(--ok);}
+  .resp-prazo{
+    display:flex;
+    gap:8px;
+    margin-top:6px;
+  }
+  .resp-prazo input{font-size:12px;padding:6px;}
+  .item-block{
+    padding:10px 0;
+    border-bottom:1px solid #eef0f5;
+  }
+  .item-block:last-child{border-bottom:none;}
+  .sim-nao{
+    display:flex;
+    gap:8px;
+    flex-shrink:0;
+  }
+  .sim-nao button{
+    border:1px solid #d3d9e6;
+    background:#fff;
+    font-size:12px;
+    padding:6px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    color:var(--muted);
+  }
+  .sim-nao button.active[data-v="sim"]{background:var(--ok);color:#fff;border-color:var(--ok);}
+  .sim-nao button.active[data-v="nao"]{background:var(--bad);color:#fff;border-color:var(--bad);}
+  .plan-item{
+    background:#f6f8fb;
+    border-radius:8px;
+    padding:10px 12px;
+    margin-bottom:8px;
+  }
+  .plan-item .periodo{
+    font-weight:700;
+    color:var(--navy);
+    font-size:13px;
+  }
+  .plan-item .acao{
+    font-size:13px;
+    color:var(--text);
+    margin-top:2px;
+  }
+  .nivel-option{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:8px 0;
+    cursor:pointer;
+  }
+  .nivel-option input{margin-top:3px;}
+  .nivel-option .t{font-weight:700;font-size:13px;color:var(--navy2);}
+  .nivel-option .d{font-size:12px;color:var(--muted);}
+  .save-status{
+    text-align:center;
+    font-size:12px;
+    color:var(--muted);
+    margin-top:-8px;
+    margin-bottom:16px;
+    min-height:16px;
+  }
+  .hidden{display:none;}
+  .footer-note{
+    text-align:center;
+    font-size:11px;
+    color:var(--muted);
+    padding:20px 16px 40px;
+  }
+  .error{
+    color:var(--bad);
+    font-size:12px;
+    margin-top:4px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">Reforma Tributária 2026-2033</div>
+  <h1>Checklist do Contador</h1>
+  <p>Bares e Restaurantes — Diagnóstico tributário, contábil e financeiro</p>
+</header>
+
+<div class="wrap">
+
+  <!-- TELA 1: IDENTIFICAÇÃO -->
+  <div id="tela-identificacao" class="card">
+    <h2>Antes de começar, se identifique</h2>
+    <p id="info-evento" style="font-size:13px;color:var(--muted);margin:-6px 0 12px;"></p>
+    <label>Nome completo *</label>
+    <input type="text" id="id_nome" placeholder="Seu nome">
+
+    <label>WhatsApp *</label>
+    <input type="tel" id="id_whatsapp" placeholder="(62) 99999-9999">
+
+    <label>Profissão *</label>
+    <input type="text" id="id_profissao" placeholder="Ex: Contador(a), Empresário(a)...">
+
+    <label>Instagram</label>
+    <input type="text" id="id_instagram" placeholder="@seuinstagram">
+
+    <label>E-mail *</label>
+    <input type="email" id="id_email" placeholder="seu@email.com">
+
+    <div id="id_erro" class="error hidden"></div>
+
+    <div style="margin-top:16px;">
+      <button class="btn" onclick="salvarIdentificacao()">Continuar para o Checklist</button>
+    </div>
+  </div>
+
+  <!-- TELA 2: CHECKLIST (preenchido via JS) -->
+  <div id="tela-checklist" class="hidden">
+    <div id="checklist-container"></div>
+    <div class="save-status" id="save-status"></div>
+    <button class="btn" onclick="salvarRespostas(true)">Salvar respostas</button>
+    <div style="margin-top:10px;">
+      <button class="btn secondary" onclick="baixarPDF()">Baixar minhas respostas em PDF</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer-note">
+  Fredy Beshara | Doutorando em Administração Pública / Mestre em Planejamento Regional e Gestão de Cidades<br>
+  Instagram: @fredy_beshara · (62) 99821-2021
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ------------------------------------------------------------
+// SCHEMA DO CHECKLIST (fiel ao PDF "Checklist do Contador - CRC")
+// ------------------------------------------------------------
+const schema = [
+  {id:'diag', title:'Diagnóstico Inicial', type:'text_qa', items:[
+    {id:'fat_mensal', label:'Qual o faturamento mensal?'},
+    {id:'perc_alcoolicas', label:'Qual percentual vem de bebidas alcoólicas?'},
+    {id:'perc_delivery', label:'Qual percentual vem de delivery?'},
+    {id:'perc_gorjeta', label:'Qual percentual médio de gorjeta?'},
+    {id:'cmv_texto', label:'Qual o Custo de Mercadoria Vendida? E por prato?'},
+    {id:'fornecedores20', label:'Quais são os 20 maiores fornecedores?', textarea:true},
+    {id:'separa_revenda', label:'O sistema separa revenda e preparo?'},
+    {id:'margem_canal', label:'Qual a margem por canal de venda?'},
+    {id:'mais_unidade', label:'Há mais de uma unidade?'},
+    {id:'resp_cadastro', label:'Quem é responsável pelo cadastro fiscal no Sistema Integrado de Gestão?'}
+  ]},
+  {id:'cmv_estoque', title:'5. CMV e Controle de Estoque', type:'status_list', withRespPrazo:true, items:[
+    {id:'cmv_grupo', label:'CMV por grupo de produto calculado'},
+    {id:'perdas', label:'Perdas e desperdícios mensurados'},
+    {id:'cmv_medio', label:'CMV médio e por prato'},
+    {id:'cmv_produto', label:'CMV por produto/prato'}
+  ]},
+  {id:'compras', title:'6. Compras e Fornecedores', type:'status_list', items:[
+    {id:'top20', label:'Top 20 fornecedores mapeados'},
+    {id:'doc_fiscal', label:'Documentação fiscal validada'},
+    {id:'cond_comerciais', label:'Condições comerciais comparadas / efeito tributário'},
+    {id:'compras_sem_doc', label:'Compras sem documento eliminadas'},
+    {id:'forn_alcool', label:'Fornecedores de bebidas alcoólicas segregados'},
+    {id:'contratos_revisados', label:'Contratos de fornecimento revisados'}
+  ]},
+  {id:'precificacao', title:'9. Precificação e Margem', type:'status_list', withRespPrazo:true, items:[
+    {id:'margem_canal2', label:'Qual a margem por canal de venda?'},
+    {id:'sim_ibs_cbs', label:'Simulação IBS/CBS realizada'},
+    {id:'sim_preco', label:'Simular preço, tributação e margem'}
+  ]},
+  {id:'delivery', title:'10. Delivery e Plataformas Digitais', type:'status_list', withRespPrazo:true, items:[
+    {id:'perc_delivery2', label:'Qual percentual vem de delivery?'},
+    {id:'delivery_conciliado', label:'Delivery é conciliado por plataforma'},
+    {id:'taxas_repasses', label:'Taxas e repasses são identificados'},
+    {id:'relatorios_categoria', label:'Relatórios permitem separar receita por categoria tributária'}
+  ]},
+  {id:'fluxo_caixa', title:'11. Fluxo de Caixa', type:'status_list', withRespPrazo:true, items:[
+    {id:'perc_gorjeta2', label:'Qual percentual médio de gorjeta?'},
+    {id:'gorjeta_registrada', label:'Gorjeta é registrada separadamente'},
+    {id:'recebimento', label:'Recebimento'},
+    {id:'repasse', label:'Repasse'}
+  ]},
+  {id:'obrigacoes', title:'12. Obrigações Acessórias e Sistemas', type:'status_list', items:[
+    {id:'pdv_doc_fiscal', label:'PDV conversa com o documento fiscal'},
+    {id:'cadastro_unico', label:'Cadastro fiscal é único entre lojas/unidades'},
+    {id:'trilha_auditoria', label:'Há trilha de auditoria para alterações de produto'},
+    {id:'regras_erp', label:'Regras fiscais parametrizadas no ERP'},
+    {id:'dados_estruturados', label:'Contabilidade recebe dados estruturados, não apenas totais'},
+    {id:'equipe_treinada', label:'Equipe treinada'},
+    {id:'plano_aprovado', label:'Plano de transição aprovado'}
+  ]},
+  {id:'contratos_fornecedores', title:'13. Contratos e Fornecedores', type:'status_list', items:[
+    {id:'top20_b', label:'Top 20 fornecedores mapeados'},
+    {id:'cond_comerciais_b', label:'Condições comerciais comparadas com efeito tributário'},
+    {id:'contratos_revisados_b', label:'Contratos de fornecimento revisados'},
+    {id:'forn_alcool_b', label:'Fornecedores de bebidas alcoólicas segregados'}
+  ]},
+  {id:'plano_transicao', title:'14. Plano de Transição 2026–2033 (90 dias)', type:'plan90', items:[
+    {id:'d1_30', periodo:'Dias 1–30', acao:'Aplicar IPRT e selecionar clientes prioritários'},
+    {id:'d31_45', periodo:'Dias 31–45', acao:'Revisar cadastros, produtos, CNAEs e documentos'},
+    {id:'d46_60', periodo:'Dias 46–60', acao:'Mapear compras, fornecedores, gorjetas e delivery'},
+    {id:'d61_75', periodo:'Dias 61–75', acao:'Simular preço, tributação e margem'},
+    {id:'d76_90', periodo:'Dias 76–90', acao:'Apresentar plano de adequação e proposta consultiva'}
+  ]},
+  {id:'iprt', title:'IPRT — Índice de Preparação para a Reforma Tributária', type:'iprt', items:[
+    {id:'iprt1', label:'Cadastro de produtos revisado'},
+    {id:'iprt2', label:'Bebidas alcoólicas segregadas'},
+    {id:'iprt3', label:'PDV integrado à contabilidade'},
+    {id:'iprt4', label:'Delivery conciliado'},
+    {id:'iprt5', label:'Gorjetas documentadas'},
+    {id:'iprt6', label:'Fornecedores mapeados'},
+    {id:'iprt7', label:'CMV por produto/prato'},
+    {id:'iprt8', label:'Simulação IBS/CBS realizada'},
+    {id:'iprt9', label:'Equipe treinada'},
+    {id:'iprt10', label:'Plano de transição aprovado'}
+  ]},
+  {id:'diagnostico_final', title:'Diagnóstico do Cliente', type:'diagnostic'}
+];
+
+let participanteId = localStorage.getItem('checklist_participante_id');
+let respostas = {};
+
+db.ref('config/evento').once('value').then(snap=>{
+  const cfg = snap.val();
+  if(cfg && (cfg.local || cfg.data)){
+    let txt = 'Palestra';
+    if(cfg.local) txt += ' — ' + cfg.local;
+    if(cfg.data) txt += ' — ' + cfg.data;
+    document.getElementById('info-evento').textContent = txt;
+  }
+});
+
+// ------------------------------------------------------------
+// IDENTIFICAÇÃO
+// ------------------------------------------------------------
+function salvarIdentificacao(){
+  const nome = document.getElementById('id_nome').value.trim();
+  const whatsapp = document.getElementById('id_whatsapp').value.trim();
+  const profissao = document.getElementById('id_profissao').value.trim();
+  const instagram = document.getElementById('id_instagram').value.trim();
+  const email = document.getElementById('id_email').value.trim();
+  const erroEl = document.getElementById('id_erro');
+
+  if(!nome || !whatsapp || !email || !profissao){
+    erroEl.textContent = 'Preencha nome, WhatsApp, profissão e e-mail para continuar.';
+    erroEl.classList.remove('hidden');
+    return;
+  }
+  erroEl.classList.add('hidden');
+
+  const novoRef = db.ref('participantes').push();
+  const dados = {
+    nome, whatsapp, profissao, instagram, email,
+    criadoEm: new Date().toISOString()
+  };
+  novoRef.set(dados).then(()=>{
+    participanteId = novoRef.key;
+    localStorage.setItem('checklist_participante_id', participanteId);
+    mostrarChecklist();
+  }).catch(err=>{
+    erroEl.textContent = 'Erro ao salvar: ' + err.message;
+    erroEl.classList.remove('hidden');
+  });
+}
+
+// ------------------------------------------------------------
+// RENDER DO CHECKLIST
+// ------------------------------------------------------------
+function mostrarChecklist(){
+  document.getElementById('tela-identificacao').classList.add('hidden');
+  document.getElementById('tela-checklist').classList.remove('hidden');
+
+  db.ref('participantes/'+participanteId+'/respostas').once('value').then(snap=>{
+    respostas = snap.val() || {};
+    renderChecklist();
+  });
+}
+
+function renderChecklist(){
+  const container = document.getElementById('checklist-container');
+  container.innerHTML = '';
+
+  schema.forEach(section=>{
+    const card = document.createElement('div');
+    card.className = 'card';
+    const h2 = document.createElement('h2');
+    h2.textContent = section.title;
+    card.appendChild(h2);
+
+    if(section.type === 'text_qa'){
+      section.items.forEach(item=>{
+        const label = document.createElement('label');
+        label.textContent = item.label;
+        card.appendChild(label);
+        const input = document.createElement(item.textarea ? 'textarea' : 'input');
+        if(!item.textarea) input.type = 'text';
+        input.value = getResp(section.id, item.id, 'valor') || '';
+        input.oninput = ()=>{ setResp(section.id, item.id, 'valor', input.value); autosave(); };
+        card.appendChild(input);
+      });
+    }
+
+    if(section.type === 'status_list'){
+      section.items.forEach(item=>{
+        const block = document.createElement('div');
+        block.className = 'item-block';
+
+        const row = document.createElement('div');
+        row.className = 'status-row';
+        const q = document.createElement('div');
+        q.className = 'q';
+        q.textContent = item.label;
+        row.appendChild(q);
+
+        const opts = document.createElement('div');
+        opts.className = 'status-options';
+        ['nao','andamento','concluido'].forEach(v=>{
+          const b = document.createElement('button');
+          b.dataset.v = v;
+          b.textContent = v==='nao' ? 'Não realizado' : v==='andamento' ? 'Em andamento' : 'Concluído';
+          if(getResp(section.id, item.id, 'status') === v) b.classList.add('active');
+          b.onclick = ()=>{
+            setResp(section.id, item.id, 'status', v);
+            opts.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+            b.classList.add('active');
+            autosave();
+          };
+          opts.appendChild(b);
+        });
+        row.appendChild(opts);
+        block.appendChild(row);
+
+        if(section.withRespPrazo){
+          const rp = document.createElement('div');
+          rp.className = 'resp-prazo';
+          const respInput = document.createElement('input');
+          respInput.type = 'text';
+          respInput.placeholder = 'Responsável';
+          respInput.value = getResp(section.id, item.id, 'responsavel') || '';
+          respInput.oninput = ()=>{ setResp(section.id, item.id, 'responsavel', respInput.value); autosave(); };
+          const prazoInput = document.createElement('input');
+          prazoInput.type = 'date';
+          prazoInput.value = getResp(section.id, item.id, 'prazo') || '';
+          prazoInput.oninput = ()=>{ setResp(section.id, item.id, 'prazo', prazoInput.value); autosave(); };
+          rp.appendChild(respInput);
+          rp.appendChild(prazoInput);
+          block.appendChild(rp);
+        }
+
+        card.appendChild(block);
+      });
+    }
+
+    if(section.type === 'plan90'){
+      section.items.forEach(item=>{
+        const pi = document.createElement('div');
+        pi.className = 'plan-item';
+        pi.innerHTML = '<div class="periodo">'+item.periodo+'</div><div class="acao">'+item.acao+'</div>';
+
+        const opts = document.createElement('div');
+        opts.className = 'status-options';
+        opts.style.marginTop = '8px';
+        ['nao','andamento','concluido'].forEach(v=>{
+          const b = document.createElement('button');
+          b.dataset.v = v;
+          b.textContent = v==='nao' ? 'Não realizado' : v==='andamento' ? 'Em andamento' : 'Concluído';
+          if(getResp(section.id, item.id, 'status') === v) b.classList.add('active');
+          b.onclick = ()=>{
+            setResp(section.id, item.id, 'status', v);
+            opts.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+            b.classList.add('active');
+            autosave();
+          };
+          opts.appendChild(b);
+        });
+        pi.appendChild(opts);
+        card.appendChild(pi);
+      });
+    }
+
+    if(section.type === 'iprt'){
+      section.items.forEach(item=>{
+        const row = document.createElement('div');
+        row.className = 'status-row';
+        const q = document.createElement('div');
+        q.className = 'q';
+        q.textContent = item.label;
+        row.appendChild(q);
+
+        const opts = document.createElement('div');
+        opts.className = 'sim-nao';
+        ['sim','nao'].forEach(v=>{
+          const b = document.createElement('button');
+          b.dataset.v = v;
+          b.textContent = v==='sim' ? 'SIM' : 'NÃO';
+          if(getResp(section.id, item.id, 'valor') === v) b.classList.add('active');
+          b.onclick = ()=>{
+            setResp(section.id, item.id, 'valor', v);
+            opts.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+            b.classList.add('active');
+            autosave();
+          };
+          opts.appendChild(b);
+        });
+        row.appendChild(opts);
+        card.appendChild(row);
+      });
+    }
+
+    if(section.type === 'diagnostic'){
+      const niveis = [
+        {v:'critico', t:'CRÍTICO', d:'Cliente ainda não iniciou a preparação'},
+        {v:'atencao', t:'ATENÇÃO', d:'Existem ajustes relevantes pendentes'},
+        {v:'transicao', t:'EM TRANSIÇÃO', d:'Principais adequações em andamento'},
+        {v:'preparado', t:'PREPARADO', d:'Processos e controles adequados ao novo cenário'}
+      ];
+      const label0 = document.createElement('label');
+      label0.textContent = 'Nível de preparação para a Reforma Tributária';
+      card.appendChild(label0);
+
+      niveis.forEach(n=>{
+        const opt = document.createElement('label');
+        opt.className = 'nivel-option';
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'nivel_preparacao';
+        radio.checked = getResp(section.id, 'nivel', 'valor') === n.v;
+        radio.onchange = ()=>{ setResp(section.id, 'nivel', 'valor', n.v); autosave(); };
+        opt.appendChild(radio);
+        const txt = document.createElement('div');
+        txt.innerHTML = '<div class="t">'+n.t+'</div><div class="d">'+n.d+'</div>';
+        opt.appendChild(txt);
+        card.appendChild(opt);
+      });
+
+      const campos = [
+        {id:'riscos', label:'Principais riscos identificados', textarea:true},
+        {id:'acoes_prioritarias', label:'Ações prioritárias', textarea:true},
+        {id:'responsavel', label:'Responsável', textarea:false},
+        {id:'prazo_revisao', label:'Prazo para revisão', type:'date'}
+      ];
+      campos.forEach(c=>{
+        const label = document.createElement('label');
+        label.textContent = c.label;
+        card.appendChild(label);
+        const input = document.createElement(c.textarea ? 'textarea' : 'input');
+        if(!c.textarea) input.type = c.type || 'text';
+        input.value = getResp(section.id, c.id, 'valor') || '';
+        input.oninput = ()=>{ setResp(section.id, c.id, 'valor', input.value); autosave(); };
+        card.appendChild(input);
+      });
+    }
+
+    container.appendChild(card);
+  });
+}
+
+function getResp(sectionId, itemId, field){
+  return respostas?.[sectionId]?.[itemId]?.[field];
+}
+function setResp(sectionId, itemId, field, value){
+  if(!respostas[sectionId]) respostas[sectionId] = {};
+  if(!respostas[sectionId][itemId]) respostas[sectionId][itemId] = {};
+  respostas[sectionId][itemId][field] = value;
+}
+
+// ------------------------------------------------------------
+// SALVAMENTO (autosave com debounce + botão manual)
+// ------------------------------------------------------------
+let saveTimeout = null;
+function autosave(){
+  clearTimeout(saveTimeout);
+  document.getElementById('save-status').textContent = 'Salvando...';
+  saveTimeout = setTimeout(()=>salvarRespostas(false), 800);
+}
+function salvarRespostas(manual){
+  db.ref('participantes/'+participanteId+'/respostas').set(respostas).then(()=>{
+    document.getElementById('save-status').textContent =
+      manual ? 'Respostas salvas com sucesso ✓' : 'Salvo automaticamente ✓';
+    setTimeout(()=>{ document.getElementById('save-status').textContent=''; }, 2500);
+  }).catch(err=>{
+    document.getElementById('save-status').textContent = 'Erro ao salvar: ' + err.message;
+  });
+}
+
+function labelStatusPdf(v){
+  if(v==='nao') return 'Não realizado';
+  if(v==='andamento') return 'Em andamento';
+  if(v==='concluido') return 'Concluído';
+  if(v==='sim') return 'SIM';
+  return v || '—';
+}
+
+function baixarPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const margin = 14;
+  let y = 18;
+  const pageHeight = doc.internal.pageSize.height;
+
+  function linha(texto, tamanho=11, negrito=false){
+    if(y > pageHeight - 15){ doc.addPage(); y = 18; }
+    doc.setFontSize(tamanho);
+    doc.setFont(undefined, negrito ? 'bold' : 'normal');
+    const partes = doc.splitTextToSize(texto, 180);
+    partes.forEach(p=>{
+      if(y > pageHeight - 15){ doc.addPage(); y = 18; }
+      doc.text(p, margin, y);
+      y += tamanho * 0.5 + 2;
+    });
+  }
+
+  linha('Checklist do Contador — Reforma Tributária 2026-2033', 14, true);
+  linha('Bares e Restaurantes', 11);
+  y += 4;
+
+  const nome = document.getElementById('id_nome') ? document.getElementById('id_nome').value : '';
+  linha('Data de geração: ' + new Date().toLocaleString('pt-BR'), 9);
+  y += 4;
+
+  schema.forEach(section=>{
+    y += 2;
+    linha(section.title, 12, true);
+
+    if(section.type === 'text_qa'){
+      section.items.forEach(item=>{
+        const v = getResp(section.id, item.id, 'valor');
+        linha(item.label + ': ' + (v || '—'), 10);
+      });
+    }
+    if(section.type === 'status_list'){
+      section.items.forEach(item=>{
+        const st = getResp(section.id, item.id, 'status');
+        let txt = item.label + ' — ' + labelStatusPdf(st);
+        if(section.withRespPrazo){
+          const resp = getResp(section.id, item.id, 'responsavel');
+          const prazo = getResp(section.id, item.id, 'prazo');
+          if(resp) txt += ' | Responsável: ' + resp;
+          if(prazo) txt += ' | Prazo: ' + prazo;
+        }
+        linha(txt, 10);
+      });
+    }
+    if(section.type === 'plan90'){
+      section.items.forEach(item=>{
+        const st = getResp(section.id, item.id, 'status');
+        linha(item.periodo + ' — ' + item.acao + ' — ' + labelStatusPdf(st), 10);
+      });
+    }
+    if(section.type === 'iprt'){
+      section.items.forEach(item=>{
+        const v = getResp(section.id, item.id, 'valor');
+        linha(item.label + ' — ' + labelStatusPdf(v), 10);
+      });
+    }
+    if(section.type === 'diagnostic'){
+      const nivel = getResp(section.id, 'nivel', 'valor');
+      linha('Nível de preparação: ' + (nivel || '—'), 10);
+      ['riscos','acoes_prioritarias','responsavel','prazo_revisao'].forEach(cid=>{
+        const v = getResp(section.id, cid, 'valor');
+        if(v) linha(cid + ': ' + v, 10);
+      });
+    }
+  });
+
+  doc.save('checklist_contador.pdf');
+}
+
+// Se já se identificou antes (mesmo navegador), pula direto pro checklist
+if(participanteId){
+  mostrarChecklist();
+}
+</script>
+</body>
+</html>
