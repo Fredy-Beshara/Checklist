@@ -23,8 +23,16 @@
   table{width:100%;border-collapse:collapse;font-size:13px;}
   th,td{text-align:left;padding:8px;border-bottom:1px solid #eef0f5;}
   th{color:var(--navy2);}
-  tr.clickable{cursor:pointer;}
-  tr.clickable:hover{background:#f6f8fb;}
+  .participante-item{
+    padding:14px 16px;
+    border-bottom:1px solid #eef0f5;
+    cursor:pointer;
+  }
+  .participante-item:last-child{border-bottom:none;}
+  .participante-item:active{background:#f6f8fb;}
+  .participante-item .nome{font-size:15px;font-weight:700;color:var(--navy);word-break:break-word;}
+  .participante-item .linha{font-size:13px;color:var(--muted);margin-top:3px;word-break:break-word;}
+  .participante-item .data{font-size:11px;color:var(--muted);margin-top:4px;}
   .hidden{display:none;}
   .top-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
   .top-actions .btn.secondary{background:#fff;color:var(--navy);border:1px solid var(--navy);}
@@ -83,13 +91,8 @@
       <button class="btn" style="background:var(--bad);" onclick="zerarParticipantes()">Zerar participantes (usar em nova palestra)</button>
       <p style="font-size:12px;color:var(--muted);margin:8px 0 0;">Apaga a lista de participantes do banco. Exporte antes — essa ação não pode ser desfeita.</p>
     </div>
-    <div class="card">
-      <table id="tabela-participantes">
-        <thead>
-          <tr><th>Nome</th><th>WhatsApp</th><th>Profissão</th><th>E-mail</th><th>Instagram</th><th>Cadastro</th></tr>
-        </thead>
-        <tbody id="tbody-participantes"></tbody>
-      </table>
+    <div class="card" style="padding:0;">
+      <div id="lista-participantes"></div>
     </div>
   </div>
 
@@ -130,16 +133,20 @@ function carregarParticipantes(){
 
   db.ref('participantes').once('value').then(snap=>{
     participantesCache = snap.val() || {};
-    const tbody = document.getElementById('tbody-participantes');
-    tbody.innerHTML = '';
+    const lista = document.getElementById('lista-participantes');
+    lista.innerHTML = '';
     Object.keys(participantesCache).forEach(id=>{
       const p = participantesCache[id];
-      const tr = document.createElement('tr');
-      tr.className = 'clickable';
-      tr.onclick = ()=>mostrarDetalhe(id);
+      const item = document.createElement('div');
+      item.className = 'participante-item';
+      item.onclick = ()=>mostrarDetalhe(id);
       const data = p.criadoEm ? new Date(p.criadoEm).toLocaleString('pt-BR') : '';
-      tr.innerHTML = '<td>'+(p.nome||'')+'</td><td>'+(p.whatsapp||'')+'</td><td>'+(p.profissao||'')+'</td><td>'+(p.email||'')+'</td><td>'+(p.instagram||'')+'</td><td>'+data+'</td>';
-      tbody.appendChild(tr);
+      item.innerHTML =
+        '<div class="nome">'+(p.nome||'')+'</div>'+
+        '<div class="linha">'+(p.profissao||'—')+' · '+(p.whatsapp||'—')+'</div>'+
+        '<div class="linha">'+(p.email||'—')+(p.instagram ? ' · '+p.instagram : '')+'</div>'+
+        '<div class="data">'+data+'</div>';
+      lista.appendChild(item);
     });
   });
 }
