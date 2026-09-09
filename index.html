@@ -126,31 +126,28 @@
     border:1px solid var(--navy);
   }
   .status-row{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
     padding:10px 0;
     border-bottom:1px solid #eef0f5;
   }
   .status-row:last-child{border-bottom:none;}
   .status-row .q{
     font-size:14px;
-    flex:1;
+    margin-bottom:8px;
   }
   .status-options{
-    display:flex;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
     gap:6px;
-    flex-shrink:0;
   }
   .status-options button{
     border:1px solid #d3d9e6;
     background:#fff;
     font-size:11px;
-    padding:6px 8px;
+    padding:8px 4px;
     border-radius:6px;
     cursor:pointer;
-    white-space:nowrap;
+    white-space:normal;
+    line-height:1.2;
     color:var(--muted);
   }
   .status-options button.active[data-v="nao"]{background:var(--bad);color:#fff;border-color:var(--bad);}
@@ -158,10 +155,11 @@
   .status-options button.active[data-v="concluido"]{background:var(--ok);color:#fff;border-color:var(--ok);}
   .resp-prazo{
     display:flex;
+    flex-wrap:wrap;
     gap:8px;
-    margin-top:6px;
+    margin-top:8px;
   }
-  .resp-prazo input{font-size:12px;padding:6px;}
+  .resp-prazo input{font-size:12px;padding:6px;flex:1;min-width:120px;}
   .item-block{
     padding:10px 0;
     border-bottom:1px solid #eef0f5;
@@ -278,7 +276,7 @@
     <div class="save-status" id="save-status"></div>
     <button class="btn" onclick="salvarRespostas(true)">Salvar respostas</button>
     <div style="margin-top:10px;">
-      <button class="btn secondary" onclick="baixarPDF()">Baixar minhas respostas em PDF</button>
+      <a class="btn secondary" href="checklist-original.pdf" download style="display:block;text-align:center;text-decoration:none;box-sizing:border-box;">Baixar material em PDF</a>
     </div>
   </div>
 
@@ -291,7 +289,6 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="firebase-config.js"></script>
 <script>
 firebase.initializeApp(firebaseConfig);
@@ -645,89 +642,6 @@ function salvarRespostas(manual){
   }).catch(err=>{
     document.getElementById('save-status').textContent = 'Erro ao salvar: ' + err.message;
   });
-}
-
-function labelStatusPdf(v){
-  if(v==='nao') return 'Não realizado';
-  if(v==='andamento') return 'Em andamento';
-  if(v==='concluido') return 'Concluído';
-  if(v==='sim') return 'SIM';
-  return v || '—';
-}
-
-function baixarPDF(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  const margin = 14;
-  let y = 18;
-  const pageHeight = doc.internal.pageSize.height;
-
-  function linha(texto, tamanho=11, negrito=false){
-    if(y > pageHeight - 15){ doc.addPage(); y = 18; }
-    doc.setFontSize(tamanho);
-    doc.setFont(undefined, negrito ? 'bold' : 'normal');
-    const partes = doc.splitTextToSize(texto, 180);
-    partes.forEach(p=>{
-      if(y > pageHeight - 15){ doc.addPage(); y = 18; }
-      doc.text(p, margin, y);
-      y += tamanho * 0.5 + 2;
-    });
-  }
-
-  linha('Checklist do Contador — Reforma Tributária 2026-2033', 14, true);
-  linha('Bares e Restaurantes', 11);
-  y += 4;
-
-  const nome = document.getElementById('id_nome') ? document.getElementById('id_nome').value : '';
-  linha('Data de geração: ' + new Date().toLocaleString('pt-BR'), 9);
-  y += 4;
-
-  schema.forEach(section=>{
-    y += 2;
-    linha(section.title, 12, true);
-
-    if(section.type === 'text_qa'){
-      section.items.forEach(item=>{
-        const v = getResp(section.id, item.id, 'valor');
-        linha(item.label + ': ' + (v || '—'), 10);
-      });
-    }
-    if(section.type === 'status_list'){
-      section.items.forEach(item=>{
-        const st = getResp(section.id, item.id, 'status');
-        let txt = item.label + ' — ' + labelStatusPdf(st);
-        if(section.withRespPrazo){
-          const resp = getResp(section.id, item.id, 'responsavel');
-          const prazo = getResp(section.id, item.id, 'prazo');
-          if(resp) txt += ' | Responsável: ' + resp;
-          if(prazo) txt += ' | Prazo: ' + prazo;
-        }
-        linha(txt, 10);
-      });
-    }
-    if(section.type === 'plan90'){
-      section.items.forEach(item=>{
-        const st = getResp(section.id, item.id, 'status');
-        linha(item.periodo + ' — ' + item.acao + ' — ' + labelStatusPdf(st), 10);
-      });
-    }
-    if(section.type === 'iprt'){
-      section.items.forEach(item=>{
-        const v = getResp(section.id, item.id, 'valor');
-        linha(item.label + ' — ' + labelStatusPdf(v), 10);
-      });
-    }
-    if(section.type === 'diagnostic'){
-      const nivel = getResp(section.id, 'nivel', 'valor');
-      linha('Nível de preparação: ' + (nivel || '—'), 10);
-      ['riscos','acoes_prioritarias','responsavel','prazo_revisao'].forEach(cid=>{
-        const v = getResp(section.id, cid, 'valor');
-        if(v) linha(cid + ': ' + v, 10);
-      });
-    }
-  });
-
-  doc.save('checklist_contador.pdf');
 }
 
 // Se já se identificou antes (mesmo navegador), pula direto pro checklist
